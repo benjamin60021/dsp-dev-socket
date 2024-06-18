@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/104583988c.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .navbar-brand i {
+            font-size: 1.5rem;
+            color: #007bff;
+        }
+
+        #messages {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            max-height: 400px;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+
+        #typingIndicator {
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        form {
+            display: flex;
+        }
+
+        input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/"><i class="fas fa-cat"></i></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/channel/channel1">Salon 1</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/channel/channel2">Salon 2</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/channel/channel3">Salon 3</a>
+                </li>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Votre recherche..." aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Recherche</button>
+            </form>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2>Channel Chat</h2>
+        <div id="messages" class="mb-3"></div>
+        <div id="typingIndicator" style="display: none"></div>
+        <form id="form">
+            <input id="input" autocomplete="off" placeholder="Ecrivez votre message..." class="form-control mb-2">
+            <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const socket = io();
+
+            const form = document.getElementById("form");
+            const input = document.getElementById("input");
+            const messages = document.getElementById("messages");
+            const typingIndicator = document.getElementById("typingIndicator");
+            let typingTimeout;
+            const channelName = window.location.pathname.split("/").pop();
+
+            if (Notification.permission === "default") {
+                Notification.requestPermission();
+            }
+
+            const handleTyping = () => {
+                if (input.value.trim() === "") {
+                    clearTimeout(typingTimeout);
+                    socket.emit("SStopTyping");
+                    typingIndicator.style.display = "none";
+                } else {
+                    if (!typingTimeout) {
+                        socket.emit("STyping");
+                    }
+                    clearTimeout(typingTimeout);
+                    typingTimeout = setTimeout(() => {
+                        socket.emit("SStopTyping");
+                        typingIndicator.style.display = "none";
+                    }, 5000);
+                }
+            };
+
+            input.addEventListener("input", handleTyping);
+
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const message = input.value.trim();
+                if (message) {
+                    socket.emit("channelMessage", { channelName: channelName, msg: message });
+                    input.value = "";
+                    input.focus();
+                    clearTimeout(typingTimeout);
+                    socket.emit("SStopTyping");
+                }
+            });
+
+            const showNotification = (message) => {
+                if (Notification.permission === "granted") {
+                    new Notification("New message", {
+                        body: message,
+                        icon: "path/to/icon.png"
+                    });
+                }
+            };
+            socket.on("channelMessage", (data) => {
+                const item = document.createElement("div");
+                item.classList.add("alert", "alert-info", "mb-2");
+                item.textContent = `${data.id}: ${data.msg}`;
+                if (data.id === socket.id) {
+                    item.classList.add("text-success");
+                } else {
+                    item.classList.add("text-danger");
+                    showNotification(data.msg);
+                }
+                messages.appendChild(item);
+                messages.scrollTop = messages.scrollHeight;
+            });
+
+            socket.on("CTyping", (message) => {
+                typingIndicator.innerText = message;
+                typingIndicator.style.display = "block";
+            });
+
+            socket.on("CStopTyping", () => {
+                typingIndicator.style.display = "none";
+            });
+
+            socket.emit("joinChannel", channelName,);
+        });
+    </script>
+</body>
+
+</html>

@@ -14,11 +14,32 @@ app.get("/", (req, res) => {
   res.sendFile(join(__dirname, "index.html"))
 })
 
+app.get("/channel/:channelName", (req, res) => {
+  res.sendFile(join(__dirname, "channel.html"))
+})
+
 io.on("connection", (socket) => {
   console.log("a user connected")
 
   socket.on("disconnect", () => {
     console.log("user disconnected")
+  })
+
+  socket.on("joinChannel", (channelName) => {
+    socket.join(channelName)
+    console.log(`User ${socket.id} joined channel ${channelName}`)
+  })
+
+  socket.on("leaveChannel", (channelName) => {
+    socket.leave(channelName)
+    console.log(`User ${socket.id} left channel ${channelName}`)
+  })
+
+  socket.on("channelMessage", (data) => {
+    io.to(data.channelName).emit("channelMessage", {
+      msg: data.msg,
+      id: socket.id,
+    })
   })
 
   socket.on("STyping", () => {
