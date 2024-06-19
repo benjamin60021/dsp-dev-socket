@@ -1,80 +1,142 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Socket</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://kit.fontawesome.com/104583988c.js" crossorigin="anonymous"></script>
   <style>
-    .navbar-brand {
-      margin-left: 20px;
+    body {
+      font-family: Arial, sans-serif;
     }
 
-    .navbar {
-      justify-content: center;
-    }
-
-    .navbar-nav {
-      justify-content: center;
-      width: 100%;
+    .container {
       text-align: center;
     }
 
-    .nav-item {
-      display: inline-block;
-      margin: 0 10px;
+    ul {
+      list-style-type: none;
+      padding: 0;
     }
 
-    .custom-form {
-      max-width: 400px;
-      margin: auto;
-      padding: 20px;
+    .navbar-brand i {
+      font-size: 1.5rem;
+      color: #007bff;
     }
 
-    .custom-form .form-group {
-      margin-bottom: 15px;
+    h1 {
+      font-size: 3rem;
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 2rem;
+      color: #6c757d;
+    }
+
+    button {
+      margin-top: 20px;
     }
   </style>
-  <title>Socket</title>
 </head>
 
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">Navbar</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <a class="navbar-brand" href="/"><i class="fas fa-cat"></i></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav">
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="/">Accueil</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Features</a>
+          <a class="nav-link" href="/channel/channel1">Salon 1</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Pricing</a>
+          <a class="nav-link" href="/channel/channel2">Salon 2</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link disabled" href="#">Disabled</a>
+          <a class="nav-link" href="/channel/channel3">Salon 3</a>
+        </li>
         </li>
       </ul>
+      <form class="form-inline my-2 my-lg-0">
+        <input class="form-control mr-sm-2" type="search" placeholder="Votre recherche..." aria-label="Search">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Rechercher</button>
+      </form>
     </div>
   </nav>
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <form class="custom-form">
-          <div class="form-group">
-            <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-              placeholder="Enter email">
-          </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+  <div class="container mt-5">
+    <h1>Page d'accueil</h1>
+    <h2>Bienvenue sur le meilleur site de chat en ligne</h2>
+    <button type="button" class="btn btn-primary ml-2" data-toggle="modal" data-target="#pseudoModal">
+      Choisir un pseudo
+    </button>
+  </div>
+  <div class="modal fade" id="pseudoModal" aria-labelledby="pseudoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="pseudoModalLabel">Choisir un pseudo</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="pseudoForm">
+            <div class="form-group">
+              <label for="pseudoInput">Pseudo</label>
+              <input type="text" class="form-control" id="pseudoInput" placeholder="Entrez votre pseudo" required>
+              <div class="invalid-feedback">
+                Ce pseudo est déjà pris ou interdit.
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+          <button type="submit" class="btn btn-primary" id="savePseudoBtn">Enregistrer</button>
+        </div>
       </div>
     </div>
   </div>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const pseudoInput = document.getElementById("pseudoInput");
+      const savePseudoBtn = document.getElementById("savePseudoBtn");
+      const invalidFeedback = pseudoInput.nextElementSibling;
+      const existingPseudos = ["Allan", "allan"];
+
+      savePseudoBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+        const pseudo = pseudoInput.value.trim();
+
+        if (pseudo === "" || existingPseudos.includes(pseudo)) {
+          pseudoInput.classList.add("is-invalid");
+          invalidFeedback.style.display = "block";
+        } else {
+          console.log("Pseudo validé :", pseudo);
+          $('#pseudoModal').modal('hide');
+        }
+      });
+
+      pseudoInput.addEventListener("input", function () {
+        if (pseudoInput.classList.contains("is-invalid")) {
+          pseudoInput.classList.remove("is-invalid");
+          invalidFeedback.style.display = "none";
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>
