@@ -93,7 +93,7 @@
         </div>
     </nav>
     <div class="container mt-5">
-        <h2>Channel Chat</h2>
+        <h2 id="channelTitle">Channel Chat</h2>
         <div id="messages" class="mb-3"></div>
         <div id="typingIndicator" style="display: none"></div>
         <form id="form">
@@ -113,6 +113,9 @@
             const typingIndicator = document.getElementById("typingIndicator");
             let typingTimeout;
             const channelName = window.location.pathname.split("/").pop();
+
+            const channelNumber = channelName.replace('channel', '');
+            channelTitle.textContent = `Channel ${channelNumber}`;
 
             if (Notification.permission === "default") {
                 Notification.requestPermission();
